@@ -17,6 +17,8 @@ class RedisServer():
 
         if settings.SESSION_REDIS_SENTINEL_LIST is not None:
             self.connection_type = 'sentinel'
+        elif settings.SESSION_REDIS_CLUSTER_LIST is not None:
+            self.connection_type = 'cluster'
         else:
             if settings.SESSION_REDIS_POOL is not None:
                 server_key, server = self.get_server(session_key, settings.SESSION_REDIS_POOL)
@@ -34,7 +36,7 @@ class RedisServer():
                 self.connection_type = 'redis_unix_url'
             elif settings.SESSION_REDIS_HOST is not None:
                 self.connection_type = 'redis_host'
-            
+
         self.connection_key += self.connection_type
 
     def get_server(self, key, servers_pool):
@@ -60,6 +62,12 @@ class RedisServer():
     def get(self):
         if self.connection_key in self.__redis:
             return self.__redis[self.connection_key]
+
+        if self.connection_type == 'cluster':
+            from rediscluster import StrictRedisCluster
+            self.__redis[self.connection_key] = StrictRedisCluster(
+                startup_nodes=settings.SESSION_REDIS_CLUSTER_LIST,
+            )
 
         if self.connection_type == 'sentinel':
             from redis.sentinel import Sentinel
