@@ -64,8 +64,8 @@ class RedisServer():
             return self.__redis[self.connection_key]
 
         if self.connection_type == 'cluster':
-            from rediscluster import StrictRedisCluster
-            self.__redis[self.connection_key] = StrictRedisCluster(
+            from rediscluster import RedisCluster
+            self.__redis[self.connection_key] = RedisCluster(
                 startup_nodes=settings.SESSION_REDIS_CLUSTER_LIST,
             )
 
